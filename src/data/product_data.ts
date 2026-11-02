@@ -9,6 +9,7 @@ export interface Product {
   sku: string;
   src: string;
   arUrl?: string;
+  images?: string[];
 }
 
 const product_card: readonly Product[] = [
