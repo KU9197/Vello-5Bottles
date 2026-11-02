@@ -29,9 +29,6 @@ const MoreinfoNegative: React.FC = () => {
   const userId = params.get("userId") ?? "";
   const version = params.get("isV");
 
-  /* ---------------------------------------------------------------- */
-  /* TIME ON DETAILS PAGE (per product + total)                      */
-  /* ---------------------------------------------------------------- */
   const startRef = useRef<number>(Date.now());
   const initialRef = useRef<number>(0);
 
@@ -63,10 +60,10 @@ const MoreinfoNegative: React.FC = () => {
   }, [product, perKey]);
 
   const [open, setOpen] = useState({
+    insulation: false,
+    dishwasher: false,
+    wall: false,
     material: false,
-    lid: false,
-    capacity: false,
-    finish: false,
   });
 
   const toggle = (key: keyof typeof open) =>
@@ -109,47 +106,47 @@ const MoreinfoNegative: React.FC = () => {
         </h1>
 
         <FeatureBlock
-          title="Material: Stainless steel"
+          title="Insulation: not present"
+          open={open.insulation}
+          toggle={() => {
+            toggle("insulation");
+            logFeature("Insulation");
+          }}
+        >
+          The bottle does not feature built-in insulation. Beverages therefore tend to reach the surrounding temperature more quickly compared to insulated bottles.
+        </FeatureBlock>
+
+        <FeatureBlock
+          title="Dishwasher-proof: no"
+          open={open.dishwasher}
+          toggle={() => {
+            toggle("dishwasher");
+            logFeature("Dishwasher-proof");
+          }}
+        >
+          The bottle is not dishwasher-safe and should be cleaned by hand. Dishwasher use may damage the bottle's finish or compromise its appearance over time.
+        </FeatureBlock>
+
+        <FeatureBlock
+          title="Wall construction: single-wall medium leak-proof design"
+          open={open.wall}
+          toggle={() => {
+            toggle("wall");
+            logFeature("Wall construction");
+          }}
+        >
+          The bottle features a single-wall construction without an additional insulating layer. As a result, beverages change temperature more quickly, and the construction provides lower level of leak protection.
+        </FeatureBlock>
+
+        <FeatureBlock
+          title="Material: standard steel"
           open={open.material}
           toggle={() => {
             toggle("material");
             logFeature("Material");
           }}
         >
-          The {product.product_name} is made from durable, BPA-free stainless steel for everyday hydration.
-        </FeatureBlock>
-
-        <FeatureBlock
-          title="Lid: Standard twist cap"
-          open={open.lid}
-          toggle={() => {
-            toggle("lid");
-            logFeature("Lid");
-          }}
-        >
-          The {product.product_name} includes a practical twist-cap design for simple daily use.
-        </FeatureBlock>
-
-        <FeatureBlock
-          title="Capacity: 500ml"
-          open={open.capacity}
-          toggle={() => {
-            toggle("capacity");
-            logFeature("Capacity");
-          }}
-        >
-          The {product.product_name} features a 500ml capacity for carry-on hydration and convenience.
-        </FeatureBlock>
-
-        <FeatureBlock
-          title="Finish: Matte coating"
-          open={open.finish}
-          toggle={() => {
-            toggle("finish");
-            logFeature("Finish");
-          }}
-        >
-          The {product.product_name} includes a smooth matte finish designed for a clean, modern look.
+          The bottle is made of standard steel. We do not guarantee durability or protection against scratches.
         </FeatureBlock>
       </main>
 

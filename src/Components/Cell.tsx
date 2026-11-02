@@ -103,7 +103,7 @@ const Cell: React.FC<CellProps> = ({ chair, image, userId }) => {
         />
       </figure>
 
-      <p className="text-[22px] font-bold mb-1 font-['Tahoma'] text-[#364F6B]">
+      <p className="text-[22px] font-bold mb-1 font-round text-[#364F6B]">
         {chair.product_name}
       </p>
       <p className="text-[20px] font-bold text-black mb-4">{chair.price}</p>

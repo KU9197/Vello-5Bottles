@@ -29,9 +29,6 @@ const MoreinfoPositive: React.FC = () => {
   const userId = params.get("userId") ?? "";
   const version = params.get("isV");
 
-  /* ---------------------------------------------------------------- */
-  /* TIME ON DETAILS PAGE (per product + total)                      */
-  /* ---------------------------------------------------------------- */
   const startRef = useRef<number>(Date.now());
   const initialRef = useRef<number>(0);
 
@@ -63,10 +60,10 @@ const MoreinfoPositive: React.FC = () => {
   }, [product, perKey]);
 
   const [open, setOpen] = useState({
+    insulation: false,
+    dishwasher: false,
+    wall: false,
     material: false,
-    lid: false,
-    capacity: false,
-    finish: false,
   });
 
   const toggle = (key: keyof typeof open) =>
@@ -109,47 +106,47 @@ const MoreinfoPositive: React.FC = () => {
         </h1>
 
         <FeatureBlock
-          title="Material: Premium stainless steel"
+          title="Insulation: present"
+          open={open.insulation}
+          toggle={() => {
+            toggle("insulation");
+            logFeature("Insulation");
+          }}
+        >
+          The bottle features built-in insulation that helps maintain the temperature of beverages for longer. It keeps drinks cold or hot for an extended period compared to non-insulated bottles.
+        </FeatureBlock>
+
+        <FeatureBlock
+          title="Dishwasher-proof: yes"
+          open={open.dishwasher}
+          toggle={() => {
+            toggle("dishwasher");
+            logFeature("Dishwasher-proof");
+          }}
+        >
+          The bottle is dishwasher-safe, making it easy and convenient to clean. The bottle can be cleaned in the dishwasher according to the manufacturer's care instructions.
+        </FeatureBlock>
+
+        <FeatureBlock
+          title="Wall construction: double-wall premium leak-proof design"
+          open={open.wall}
+          toggle={() => {
+            toggle("wall");
+            logFeature("Wall construction");
+          }}
+        >
+          The bottle features a double-wall construction that improves temperature retention and provides an additional layer of protection against leaks.
+        </FeatureBlock>
+
+        <FeatureBlock
+          title="Material: premium stainless steel"
           open={open.material}
           toggle={() => {
             toggle("material");
             logFeature("Material");
           }}
         >
-          The {product.product_name} offers a premium stainless-steel body with a durable finish and high-quality feel.
-        </FeatureBlock>
-
-        <FeatureBlock
-          title="Lid: Leak-proof locking cap"
-          open={open.lid}
-          toggle={() => {
-            toggle("lid");
-            logFeature("Lid");
-          }}
-        >
-          The {product.product_name} has a leak-proof locking lid that keeps your drink secure during travel or commuting.
-        </FeatureBlock>
-
-        <FeatureBlock
-          title="Capacity: 750ml"
-          open={open.capacity}
-          toggle={() => {
-            toggle("capacity");
-            logFeature("Capacity");
-          }}
-        >
-          The {product.product_name} features a 750ml capacity for longer hydration and everyday convenience.
-        </FeatureBlock>
-
-        <FeatureBlock
-          title="Finish: Premium matte or gloss coating"
-          open={open.finish}
-          toggle={() => {
-            toggle("finish");
-            logFeature("Finish");
-          }}
-        >
-          The {product.product_name} includes a premium finish designed to feel modern, durable, and easy to carry.
+          The bottle is made of premium stainless steel, providing a durable and robust construction for protection against scratches.
         </FeatureBlock>
       </main>
 

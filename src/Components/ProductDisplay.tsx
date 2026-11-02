@@ -7,7 +7,7 @@ import { db } from '../services/firebase';
 import { TimeData } from '../types/types';
 
 interface ProductDisplayProps {
-  product: { id: string; product_name: string; farbe: string };
+  product: { id: string; product_name: string; farbe: string; price?: string | number };
   userId: string;
   mode?: string;
   timeData: TimeData;
@@ -53,7 +53,7 @@ const ProductDisplay: React.FC<ProductDisplayProps> = ({
 
       <div className="space-y-4 items-center text-[25px] font-fira-sans mb-10 mt-10">
         {[
-          { label: 'Price: $119.99', key: 'price' },
+          { label: `Price: ${product.price ?? '$19.99'}`, key: 'price' },
           { label: `Color: ${product.farbe}`, key: 'color' },
         ].map(({ label, key }) => (
           <li
@@ -64,16 +64,15 @@ const ProductDisplay: React.FC<ProductDisplayProps> = ({
           </li>
         ))}
 
-        
-          <button
-            onClick={handleClick}
-            className="mt-4 flex items-center gap-2 bg-white px-4 py-4 font-bold text-[16px] 
-                hover:shadow-[0px_1px_4px_rgba(0,0,0,0.16)] 
-                hover:scale-[0.96] 
-                transition-transform duration-150 "
-          >
-            <AiOutlineArrowRight /> MORE INFORMATION
-          </button>
+        <button
+          onClick={handleClick}
+          className="mt-4 flex items-center gap-2 bg-white px-4 py-4 font-bold text-[16px] 
+              hover:shadow-[0px_1px_4px_rgba(0,0,0,0.16)] 
+              hover:scale-[0.96] 
+              transition-transform duration-150 "
+        >
+          <AiOutlineArrowRight /> MORE INFORMATION
+        </button>
       </div>
     </section>
   );
