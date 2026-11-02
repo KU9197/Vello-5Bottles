@@ -98,7 +98,7 @@ const ThankYouPage: React.FC = () => {
       "1": {
         // AR mode
         true: "https://usc.qualtrics.com/jfe/form/SV_aXdWxaiNspf6pJY",
-        false: "https://unikoelnwiso.eu.qualtrics.com/jfe/form/SV_1FlxXrNGSyDPaqa",
+        false: "https://usc.qualtrics.com/jfe/form/SV_6L0vtoRHudmy5wy",
       },
       "2": {
         // 3D mode
