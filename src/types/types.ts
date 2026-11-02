@@ -1,6 +1,6 @@
 /** Master copy – change once and every file stays in sync */
 export interface Product {
-  id: string | number; // ← works for both “123” and 123
+  id: string | number;        // ← works for both “123” and 123
   product_name: string;
   price: string;
   farbe: string;
@@ -9,6 +9,7 @@ export interface Product {
   sku: string;
   src: string;
   arUrl?: string;
+  images?: string[];
 }
 
 export interface TimeData {
