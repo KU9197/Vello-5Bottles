@@ -102,8 +102,8 @@ const ThankYouPage: React.FC = () => {
       },
       "2": {
         // 3D mode
-        true: "https://unikoelnwiso.eu.qualtrics.com/jfe/form/SV_2awqh8xDoA5tnZc",
-        false: "https://unikoelnwiso.eu.qualtrics.com/jfe/form/SV_1H5q9OYYqBuNPiS",
+        true: "https://usc.qualtrics.com/jfe/form/SV_1N5facUTpIrBVFc",
+        false: "https://usc.qualtrics.com/jfe/form/SV_55zJTH2R4RK0vqu",
       },
     };
 
