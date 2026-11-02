@@ -98,12 +98,12 @@ const ThankYouPage: React.FC = () => {
       "1": {
         // AR mode
         true: "https://usc.qualtrics.com/jfe/form/SV_aXdWxaiNspf6pJY",
-        false: "https://usc.qualtrics.com/jfe/form/SV_6L0vtoRHudmy5wy",
+        false: "https://usc.qualtrics.com/jfe/form/SV_b7oMuUmfZXfubS6",
       },
       "2": {
         // 3D mode
-        true: "https://usc.qualtrics.com/jfe/form/SV_1N5facUTpIrBVFc",
-        false: "https://usc.qualtrics.com/jfe/form/SV_55zJTH2R4RK0vqu",
+        true: "https://usc.qualtrics.com/jfe/form/SV_0uLCZESCMpsYvmm",
+        false: "https://usc.qualtrics.com/jfe/form/SV_eDp2QW8cnhfWmDs",
       },
     };
 
