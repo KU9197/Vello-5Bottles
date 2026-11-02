@@ -2,65 +2,70 @@
 export interface Product {
   id: number;
   product_name: string;
-  price: string;       
-  farbe: string;       
+  price: string;
+  farbe: string;
   currency: string;
-  thumb: string;       
+  thumb: string;
   sku: string;
-  src: string; 
-  images?: string[];        
+  src: string;
+  arUrl?: string;
 }
 
 const product_card: readonly Product[] = [
   {
     id: 1,
-    product_name: "Noir Atlas",
-    price: "$119.99",
-    farbe: "Black",
-    currency: "EURO",
-    thumb: "./images/image2_atlas.png",
-    sku: "3Dimage1_atlas",
-    src: "https://sketchfab.com/models/2bdbfaf695c04dd998a9de0ee41be9da/embed",
+    product_name: "Aqua Flow",
+    price: "$19.99",
+    farbe: "White",
+    currency: "USD",
+    thumb: "./images/aqua_flow.png",
+    sku: "aquaflow",
+    src: "https://aquaflow3d.vercel.app/",
+    arUrl: "https://aquaflowar.vercel.app/",
   },
   {
     id: 2,
-    product_name: "Noir Sierra",
-    price: "$119.99",
-    farbe: "Gray",
-    currency: "EURO",
-    thumb: "./images/image3_sierra.png",
-    sku: "3Dimage2_sierra",
-    src: "https://sketchfab.com/models/3e0d5699f1cf45fc9d43bb56d8d8cf1c/embed",
+    product_name: "Hydro Peak",
+    price: "$19.99",
+    farbe: "Light green",
+    currency: "USD",
+    thumb: "./images/hydro_peak.png",
+    sku: "hydropeak",
+    src: "https://hydropeak3d.vercel.app/",
+    arUrl: "https://hydropeakar.vercel.app/",
   },
   {
     id: 3,
-    product_name: "Noir Andes",
-    price: "$119.99",
+    product_name: "PureSip",
+    price: "$19.99",
     farbe: "Black",
-    currency: "EURO",
-    thumb: "./images/image4_andes.png",
-    sku: "3Dimage3_andes",
-    src: "https://sketchfab.com/models/6aef8b2c673a41ad8698f0b8689a09a3/embed",
+    currency: "USD",
+    thumb: "./images/puresip.png",
+    sku: "puresip",
+    src: "https://puresip3d.vercel.app/",
+    arUrl: "https://puresipar.vercel.app/",
   },
   {
     id: 4,
-    product_name: "Noir Acadia",
-    price: "$119.99",
-    farbe: "Gray",
-    currency: "EURO",
-    thumb: "./images/image5_acadia.png",
-    sku: "3Dimage4_acadia",
-    src: "https://sketchfab.com/models/976e7673eff24fb7b8bd41d23145f03d/embed",
+    product_name: "Flint",
+    price: "$19.99",
+    farbe: "White",
+    currency: "USD",
+    thumb: "./images/flint.png",
+    sku: "flint",
+    src: "https://flint3d.vercel.app/",
+    arUrl: "https://flintar.vercel.app/",
   },
   {
     id: 5,
-    product_name: "Noir Savanna",
-    price: "$119.99",
-    farbe: "Brown",
-    currency: "EURO",
-    thumb: "./images/image6_savanna.png",
-    sku: "3Dimage5_savanna",
-    src: "https://sketchfab.com/models/5502908492f644e99545b7d4f675bc1a/embed",
+    product_name: "Oryn",
+    price: "$19.99",
+    farbe: "Green",
+    currency: "USD",
+    thumb: "./images/oryn.png",
+    sku: "oryn",
+    src: "https://oryn3d.vercel.app/",
+    arUrl: "https://orynar.vercel.app/",
   },
 ];
 

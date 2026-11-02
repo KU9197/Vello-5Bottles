@@ -15,45 +15,45 @@ const HeroSection: React.FC<HeroSectionProps> = ({ userId }) => {
   return (
     <section className="">
       <div className="mx-[8%] mt-20 mb-2.5 max-w-full px-0 ">
-      <div className="grid grid-cols-2 flex gap-8 w-[100%]">
-        <div>
-          <p className="mb-0 uppercase tracking-wide text-primary-blue">
-            Welcome to
-          </p>
-          <h1 className="capitalize font-bold text-primary-blue text-[3.5rem]">
-            NOIR
-          </h1>
-          <p className="mb-[20px] mt-[20px] text-primary-blue text-[1rem]">
-            Timeless Elegance, Enduring Style
-          </p>
+        <div className="grid grid-cols-2 flex gap-8 w-[100%]">
+          <div>
+            <p className="mb-0 uppercase tracking-wide text-primary-blue">
+              Welcome to
+            </p>
+            <h1 className="capitalize font-bold text-primary-blue text-[3.5rem]">
+              VELLO
+            </h1>
+            <p className="mb-[20px] mt-[20px] text-primary-blue text-[1rem]">
+              Hydration for every day
+            </p>
 
-          <NavLink to="#">
-            <button
-              onClick={handleClick}
-              className="inline-block uppercase bg-primary-blue text-white py-[0.9rem] px-[1.8rem] rounded-[3px]         
+            <NavLink to="#">
+              <button
+                onClick={handleClick}
+                className="inline-block uppercase bg-primary-blue text-white py-[0.9rem] px-[1.8rem] rounded-[3px]         
                           transition duration-300 hover:bg-white hover:text-primary-blue
     hover:shadow-[0_1px_4px_rgba(0,0,0,0.16)] hover:scale-[0.96]
     active:shadow-[0_1px_4px_rgba(0,0,0,0.16)] active:scale-[0.96] text-[10px]"
-            >
-              Shop Now
-            </button>
-          </NavLink>
-        </div>
+              >
+                Shop Now
+              </button>
+            </NavLink>
+          </div>
 
-        <div className="mt-[10px] w-full mr-20 flex justify-right">
-          <figure className="relative w-full">
-            <span
-              aria-hidden
-              className="absolute left-[35%] md:left-[33%] top-[1rem] md:top-[-3rem] z-[-1] h-[62%] md:h-[80%] w-[78%] md:w-[55%] bg-primary-blue"
-            />
-            <img
-              src="images/image1_heading.png"
-              alt="Noir hero"
-              className="md:w-[80%] h-auto"
-            />
-          </figure>
+          <div className="mt-[10px] w-full mr-20 flex justify-right">
+            <figure className="relative w-full">
+              <span
+                aria-hidden
+                className="absolute left-[35%] md:left-[33%] top-[1rem] md:top-[-3rem] z-[-1] h-[62%] md:h-[80%] w-[78%] md:w-[55%] bg-primary-blue"
+              />
+              <img
+                src="images/image1_heading.png"
+                alt="Vello bottle hero"
+                className="md:w-[80%] h-auto"
+              />
+            </figure>
+          </div>
         </div>
-      </div>
       </div>
     </section>
   );

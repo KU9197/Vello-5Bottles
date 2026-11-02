@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { doc, setDoc, arrayUnion } from "@firebase/firestore";
 import { db } from "../services/firebase";
 
-export interface Chair {
+export interface Bottle {
   id: number;
   product_name: string;
   price: string | number;
 }
 
 interface CellProps {
-  chair: Chair;
+  chair: Bottle;
   image: string;
   userId: string;
 }
@@ -34,10 +34,9 @@ const Cell: React.FC<CellProps> = ({ chair, image, userId }) => {
     if (shuffledIndex === -1) {
       console.warn("chair.id not found in shuffledIDs", {
         chairId: chair.id,
-        shuffledIDs: productIdSequence, 
+        shuffledIDs: productIdSequence,
       });
 
-      // Still allow navigation/logging even if experiment assignment fails
       navigate(`/product?mode=${mode ?? ""}&product_id=${chair.id}&userId=${userId}`);
       return;
     }
@@ -55,7 +54,6 @@ const Cell: React.FC<CellProps> = ({ chair, image, userId }) => {
       ? (productDetailsVersion as (boolean | undefined)[])
       : [];
 
-    // Ensure versions array matches shuffledIDs length
     if (versions.length !== productIdSequence.length) {
       versions = Array(productIdSequence.length).fill(undefined);
     }
@@ -64,9 +62,8 @@ const Cell: React.FC<CellProps> = ({ chair, image, userId }) => {
     let lastValue =
       lastValueRaw === null ? Math.random() < 0.5 : lastValueRaw === "true";
 
-    // Assign if this product not assigned yet
     if (typeof versions[shuffledIndex] !== "boolean") {
-      lastValue = !lastValue; // alternate A/B assignment
+      lastValue = !lastValue;
       versions[shuffledIndex] = lastValue;
 
       sessionStorage.setItem("productdetailsVersion", JSON.stringify(versions));

@@ -30,62 +30,61 @@ const SingleProduct: React.FC = () => {
   const [timeData, setTimeData] = useState<TimeData | null>(null);
 
   // ------------------------------
-// AWAY TIME (product-aware)
-// ------------------------------
-const AWAY_CTX_KEY = "timeSpentAwayCtx"; // JSON: { productId, productName, startedAt }
-const AWAY_TOTAL_ALL_KEY = "timeSpentAway_all";
+  // AWAY TIME (product-aware)
+  // ------------------------------
+  const AWAY_CTX_KEY = "timeSpentAwayCtx"; // JSON: { productId, productName, startedAt }
+  const AWAY_TOTAL_ALL_KEY = "timeSpentAway_all";
 
-const getAwayTotalKeyForProduct = (productName: string) =>
-  `timeSpentAway_${productName}`;
+  const getAwayTotalKeyForProduct = (productName: string) =>
+    `timeSpentAway_${productName}`;
 
-const startAway = useCallback(() => {
-  if (!product) return;
+  const startAway = useCallback(() => {
+    if (!product) return;
 
-  // don't overwrite if already running
-  if (sessionStorage.getItem(AWAY_CTX_KEY)) return;
+    // don't overwrite if already running
+    if (sessionStorage.getItem(AWAY_CTX_KEY)) return;
 
-  sessionStorage.setItem(
-    AWAY_CTX_KEY,
-    JSON.stringify({
-      productId: product.id,
-      productName: product.product_name,
-      startedAt: Date.now(),
-    })
-  );
-}, [product]);
+    sessionStorage.setItem(
+      AWAY_CTX_KEY,
+      JSON.stringify({
+        productId: product.id,
+        productName: product.product_name,
+        startedAt: Date.now(),
+      })
+    );
+  }, [product]);
 
-const stopAwayAndAccumulate = useCallback(() => {
-  const raw = sessionStorage.getItem(AWAY_CTX_KEY);
-  if (!raw) return;
+  const stopAwayAndAccumulate = useCallback(() => {
+    const raw = sessionStorage.getItem(AWAY_CTX_KEY);
+    if (!raw) return;
 
-  let ctx: { productId: number; productName: string; startedAt: number } | null =
-    null;
+    let ctx: { productId: number; productName: string; startedAt: number } | null =
+      null;
 
-  try {
-    ctx = JSON.parse(raw);
-  } catch {
-    ctx = null;
-  }
-  if (!ctx?.startedAt || !ctx.productName) {
+    try {
+      ctx = JSON.parse(raw);
+    } catch {
+      ctx = null;
+    }
+    if (!ctx?.startedAt || !ctx.productName) {
+      sessionStorage.removeItem(AWAY_CTX_KEY);
+      return;
+    }
+
+    const deltaSec = (Date.now() - ctx.startedAt) / 1000;
+
+    // 1) per-product total
+    const perKey = getAwayTotalKeyForProduct(ctx.productName);
+    const prevPer = Number(sessionStorage.getItem(perKey) ?? "0");
+    sessionStorage.setItem(perKey, String(prevPer + deltaSec));
+
+    // 2) total across products
+    const prevAll = Number(sessionStorage.getItem(AWAY_TOTAL_ALL_KEY) ?? "0");
+    sessionStorage.setItem(AWAY_TOTAL_ALL_KEY, String(prevAll + deltaSec));
+
+    // stop timer
     sessionStorage.removeItem(AWAY_CTX_KEY);
-    return;
-  }
-
-  const deltaSec = (Date.now() - ctx.startedAt) / 1000;
-
-  // 1) per-product total
-  const perKey = getAwayTotalKeyForProduct(ctx.productName);
-  const prevPer = Number(sessionStorage.getItem(perKey) ?? "0");
-  sessionStorage.setItem(perKey, String(prevPer + deltaSec));
-
-  // 2) total across products
-  const prevAll = Number(sessionStorage.getItem(AWAY_TOTAL_ALL_KEY) ?? "0");
-  sessionStorage.setItem(AWAY_TOTAL_ALL_KEY, String(prevAll + deltaSec));
-
-  // stop timer
-  sessionStorage.removeItem(AWAY_CTX_KEY);
-}, []);
-
+  }, []);
 
   /* ---------- version flag ---------- */
   const version = useMemo(() => {
@@ -96,9 +95,8 @@ const stopAwayAndAccumulate = useCallback(() => {
     const seenArr = JSON.parse(seen) as (boolean | null | undefined)[];
     const orderArr = JSON.parse(order) as (number | string)[];
     const idx = orderArr.map(String).indexOf(String(product.id));
-  return idx > -1 ? (seenArr[idx] ?? undefined) : undefined;
-}, [product]);
-
+    return idx > -1 ? (seenArr[idx] ?? undefined) : undefined;
+  }, [product]);
 
   /* ---------------------------------------------------------------- */
   /* One-time mount logic                                             */
@@ -239,14 +237,20 @@ const stopAwayAndAccumulate = useCallback(() => {
 
   const get3DViewerUrl = useCallback(() => {
     if (!product?.src) return "";
-  
+
     return (
       `${window.location.origin}/3dviewer` +
       `?src=${encodeURIComponent(product.src)}` +
       `&name=${encodeURIComponent(product.product_name)}`
     );
   }, [product]);
-  
+
+  const arViewerUrl =
+    product?.arUrl ??
+    `https://ar-chair-viewer-three.vercel.app/?model=${encodeURIComponent(
+      product?.sku ?? ""
+    )}`;
+
   /* ---------------------------------------------------------------- */
   /* 3D Launcher with iframe                                                       */
   /* ---------------------------------------------------------------- */
@@ -274,14 +278,14 @@ const stopAwayAndAccumulate = useCallback(() => {
           font-size: 18px;
           font-weight: 600;
           color: white;
-          background: #364F6B; /* close to your primary-blue */
+          background: #364F6B;
           cursor: pointer;
         }
         button:hover { filter: brightness(0.9); }
       </style>
     </head>
     <body>
-      <button id="btn">Open 3D in new window</button>
+      <button id="btn">Open 3D bottle view</button>
       <script>
         document.getElementById('btn').addEventListener('click', function () {
           window.open(${JSON.stringify(url)}, '_blank', 'noopener,noreferrer');
@@ -290,10 +294,6 @@ const stopAwayAndAccumulate = useCallback(() => {
     </body>
   </html>`;
   }, []);
-  
-
-
-  
 
   /* ---------------------------------------------------------------- */
   if (!product) return <div>Loading…</div>;
@@ -319,31 +319,27 @@ const stopAwayAndAccumulate = useCallback(() => {
 
           {mode === "2" ? (
             <div className="flex justify-center">
-            <div className="mt-8 mb-12 w-[82%] max-w-md overflow-hidden rounded-2xl bg-[#E6E8EA] border border-[#D5D9DD] shadow-sm h-[240px]">
-              <iframe
-                title="Open 3D Launcher"
-                srcDoc={build3DLauncherSrcDoc(get3DViewerUrl())}
-                className="w-full h-full"
-                onMouseDown={() => startAway()} 
-              />
+              <div className="mt-8 mb-12 w-[82%] max-w-md overflow-hidden rounded-2xl bg-[#E6E8EA] border border-[#D5D9DD] shadow-sm h-[240px]">
+                <iframe
+                  title="Open 3D Launcher"
+                  srcDoc={build3DLauncherSrcDoc(get3DViewerUrl())}
+                  className="w-full h-full"
+                  onMouseDown={() => startAway()}
+                />
+              </div>
             </div>
-          </div>
           ) : (
             <div className="flex justify-center">
               <div className="mt-8 mb-12 w-[82%] max-w-md overflow-hidden rounded-2xl bg-[#E6E8EA] border border-[#D5D9DD] shadow-sm px-8 py-14">
                 <div className="flex flex-col items-center gap-4">
-                  
                   <iframe
-                    src={`https://ar-chair-viewer-three.vercel.app/?model=${encodeURIComponent(
-                      product.sku
-                    )}`}
-                    title="AR Chair Viewer"
+                    src={arViewerUrl}
+                    title="AR Bottle Viewer"
                     allow="xr-spatial-tracking; camera; microphone; fullscreen"
                     allowFullScreen
                     referrerPolicy="no-referrer-when-downgrade"
                     loading="lazy"
                     className="w-full h-[130px]"
-                    //className="w-[350px] h-[130px]"
                   />
                 </div>
               </div>
