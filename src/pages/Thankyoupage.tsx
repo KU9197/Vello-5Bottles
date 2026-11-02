@@ -97,7 +97,7 @@ const ThankYouPage: React.FC = () => {
     const map: Record<string, Record<string, string>> = {
       "1": {
         // AR mode
-        true: "https://unikoelnwiso.eu.qualtrics.com/jfe/form/SV_0OqBO3hr3bGC9pk",
+        true: "https://usc.qualtrics.com/jfe/form/SV_aXdWxaiNspf6pJY",
         false: "https://unikoelnwiso.eu.qualtrics.com/jfe/form/SV_1FlxXrNGSyDPaqa",
       },
       "2": {
