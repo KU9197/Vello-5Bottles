@@ -30,8 +30,7 @@ const MoreinfoPositive: React.FC = () => {
   const version = params.get("isV");
 
   /* ---------------------------------------------------------------- */
-  /* TIME ON DETAILS PAGE (per chair + total)                          */
-  /* - uses refs to avoid "pageStartTime = 0" huge numbers             */
+  /* TIME ON DETAILS PAGE (per product + total)                      */
   /* ---------------------------------------------------------------- */
   const startRef = useRef<number>(Date.now());
   const initialRef = useRef<number>(0);
@@ -41,7 +40,6 @@ const MoreinfoPositive: React.FC = () => {
     ? `timeSpentOnProductDetailsPage_${product.product_name}`
     : null;
 
-  // init timing once product is known
   useEffect(() => {
     if (!product || !perKey) return;
 
@@ -49,7 +47,6 @@ const MoreinfoPositive: React.FC = () => {
     initialRef.current = Number(sessionStorage.getItem(perKey) ?? "0") || 0;
   }, [product, perKey]);
 
-  // persist time on unmount (per chair + total)
   useEffect(() => {
     return () => {
       if (!product || !perKey) return;
@@ -57,28 +54,24 @@ const MoreinfoPositive: React.FC = () => {
       const elapsed = (Date.now() - startRef.current) / 1000;
       if (!Number.isFinite(elapsed) || elapsed < 0) return;
 
-      // per chair
       sessionStorage.setItem(perKey, String(initialRef.current + elapsed));
 
-      // total across chairs
       const prevAll =
         Number(sessionStorage.getItem(DETAILS_TOTAL_ALL_KEY) ?? "0") || 0;
       sessionStorage.setItem(DETAILS_TOTAL_ALL_KEY, String(prevAll + elapsed));
     };
   }, [product, perKey]);
 
-  /* ---------- feature accordion state ---------- */
   const [open, setOpen] = useState({
-    upholstery: false,
-    backrest: false,
-    seat: false,
-    armrests: false,
+    material: false,
+    lid: false,
+    capacity: false,
+    finish: false,
   });
 
   const toggle = (key: keyof typeof open) =>
     setOpen((s) => ({ ...s, [key]: !s[key] }));
 
-  /* ---------- Firestore logging (unchanged) ---------- */
   const logBuyNow = async (payload: string) =>
     setDoc(
       doc(db, "users", userId),
@@ -116,52 +109,47 @@ const MoreinfoPositive: React.FC = () => {
         </h1>
 
         <FeatureBlock
-          title="Upholstery: Premium padding"
-          open={open.upholstery}
+          title="Material: Premium stainless steel"
+          open={open.material}
           toggle={() => {
-            toggle("upholstery");
-            logFeature("Upholstery");
+            toggle("material");
+            logFeature("Material");
           }}
         >
-          The {product.product_name} offers a breathable, premium upholstery with
-          additional padding for superior seating comfort and durability.
+          The {product.product_name} offers a premium stainless-steel body with a durable finish and high-quality feel.
         </FeatureBlock>
 
         <FeatureBlock
-          title="Backrest: Reclining function included"
-          open={open.backrest}
+          title="Lid: Leak-proof locking cap"
+          open={open.lid}
           toggle={() => {
-            toggle("backrest");
-            logFeature("Backrest");
+            toggle("lid");
+            logFeature("Lid");
           }}
         >
-          The {product.product_name} features a reclining backrest, allowing for a
-          more ergonomic sitting posture.
+          The {product.product_name} has a leak-proof locking lid that keeps your drink secure during travel or commuting.
         </FeatureBlock>
 
         <FeatureBlock
-          title="Adjustable seat height: 10 levels"
-          open={open.seat}
+          title="Capacity: 750ml"
+          open={open.capacity}
           toggle={() => {
-            toggle("seat");
-            logFeature("Adjustable seat height");
+            toggle("capacity");
+            logFeature("Capacity");
           }}
         >
-          The {product.product_name} features a 10-level adjustable seat height,
-          allowing you to customize the chair to your individual height and
-          seating preferences for optimal comfort.
+          The {product.product_name} features a 750ml capacity for longer hydration and everyday convenience.
         </FeatureBlock>
 
         <FeatureBlock
-          title="Armrests: Adjustable and padded"
-          open={open.armrests}
+          title="Finish: Premium matte or gloss coating"
+          open={open.finish}
           toggle={() => {
-            toggle("armrests");
-            logFeature("Armrests");
+            toggle("finish");
+            logFeature("Finish");
           }}
         >
-          The {product.product_name} includes height-adjustable, padded armrests
-          for enhanced comfort and ergonomic support.
+          The {product.product_name} includes a premium finish designed to feel modern, durable, and easy to carry.
         </FeatureBlock>
       </main>
 

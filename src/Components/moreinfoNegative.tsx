@@ -30,8 +30,7 @@ const MoreinfoNegative: React.FC = () => {
   const version = params.get("isV");
 
   /* ---------------------------------------------------------------- */
-  /* TIME ON DETAILS PAGE (per chair + total)                          */
-  /* - uses refs to avoid "pageStartTime = 0" huge numbers             */
+  /* TIME ON DETAILS PAGE (per product + total)                      */
   /* ---------------------------------------------------------------- */
   const startRef = useRef<number>(Date.now());
   const initialRef = useRef<number>(0);
@@ -41,7 +40,6 @@ const MoreinfoNegative: React.FC = () => {
     ? `timeSpentOnProductDetailsPage_${product.product_name}`
     : null;
 
-  // init timing once product is known
   useEffect(() => {
     if (!product || !perKey) return;
 
@@ -49,7 +47,6 @@ const MoreinfoNegative: React.FC = () => {
     initialRef.current = Number(sessionStorage.getItem(perKey) ?? "0") || 0;
   }, [product, perKey]);
 
-  // persist time on unmount (per chair + total)
   useEffect(() => {
     return () => {
       if (!product || !perKey) return;
@@ -57,28 +54,24 @@ const MoreinfoNegative: React.FC = () => {
       const elapsed = (Date.now() - startRef.current) / 1000;
       if (!Number.isFinite(elapsed) || elapsed < 0) return;
 
-      // per chair
       sessionStorage.setItem(perKey, String(initialRef.current + elapsed));
 
-      // total across chairs
       const prevAll =
         Number(sessionStorage.getItem(DETAILS_TOTAL_ALL_KEY) ?? "0") || 0;
       sessionStorage.setItem(DETAILS_TOTAL_ALL_KEY, String(prevAll + elapsed));
     };
   }, [product, perKey]);
 
-  /* ---------- feature accordion state ---------- */
   const [open, setOpen] = useState({
-    upholstery: false,
-    backrest: false,
-    seat: false,
-    armrests: false,
+    material: false,
+    lid: false,
+    capacity: false,
+    finish: false,
   });
 
   const toggle = (key: keyof typeof open) =>
     setOpen((s) => ({ ...s, [key]: !s[key] }));
 
-  /* ---------- Firestore logging (unchanged) ---------- */
   const logBuyNow = async (payload: string) =>
     setDoc(
       doc(db, "users", userId),
@@ -116,49 +109,47 @@ const MoreinfoNegative: React.FC = () => {
         </h1>
 
         <FeatureBlock
-          title="Upholstery: Synthetic"
-          open={open.upholstery}
+          title="Material: Stainless steel"
+          open={open.material}
           toggle={() => {
-            toggle("upholstery");
-            logFeature("Upholstery");
+            toggle("material");
+            logFeature("Material");
           }}
         >
-          The {product.product_name} includes synthetic fabric upholstery.
+          The {product.product_name} is made from durable, BPA-free stainless steel for everyday hydration.
         </FeatureBlock>
 
         <FeatureBlock
-          title="Backrest: No reclining function"
-          open={open.backrest}
+          title="Lid: Standard twist cap"
+          open={open.lid}
           toggle={() => {
-            toggle("backrest");
-            logFeature("Backrest");
+            toggle("lid");
+            logFeature("Lid");
           }}
         >
-          The {product.product_name} does not offer a reclining backrest.
+          The {product.product_name} includes a practical twist-cap design for simple daily use.
         </FeatureBlock>
 
         <FeatureBlock
-          title="Adjustable seat height: 2 levels"
-          open={open.seat}
+          title="Capacity: 500ml"
+          open={open.capacity}
           toggle={() => {
-            toggle("seat");
-            logFeature("Adjustable seat height");
+            toggle("capacity");
+            logFeature("Capacity");
           }}
         >
-          The {product.product_name} features a 2-level adjustable seat height to
-          fit standard heights.
+          The {product.product_name} features a 500ml capacity for carry-on hydration and convenience.
         </FeatureBlock>
 
         <FeatureBlock
-          title="Armrests: Fixed and plastic"
-          open={open.armrests}
+          title="Finish: Matte coating"
+          open={open.finish}
           toggle={() => {
-            toggle("armrests");
-            logFeature("Armrests");
+            toggle("finish");
+            logFeature("Finish");
           }}
         >
-          The {product.product_name} includes non-adjustable armrests made of
-          standard plastic.
+          The {product.product_name} includes a smooth matte finish designed for a clean, modern look.
         </FeatureBlock>
       </main>
 
