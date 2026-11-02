@@ -47,7 +47,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ userId }) => {
                 className="absolute left-[35%] md:left-[33%] top-[1rem] md:top-[-3rem] z-[-1] h-[62%] md:h-[80%] w-[78%] md:w-[55%] bg-primary-blue"
               />
               <img
-                src="images/image1_heading.png"
+                src="/images/vello_hero.jpg"
                 alt="Vello bottle hero"
                 className="md:w-[80%] h-auto"
               />

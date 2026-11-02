@@ -9,10 +9,10 @@ const Header: React.FC = () => (
   >
     <NavLink to="/home" className="shrink-0">
       <img
-        src="/images/Logo_Noir.png"
+        src="/images/vello_logo.png"
         width={120}
         height={100}
-        alt="Noir logo"
+        alt="Vello logo"
         className="object-contain"
       />
     </NavLink>
