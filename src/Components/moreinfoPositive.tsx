@@ -113,7 +113,7 @@ const MoreinfoPositive: React.FC = () => {
             logFeature("Insulation");
           }}
         >
-          The bottle features built-in insulation that helps maintain the temperature of beverages for longer. It keeps drinks cold or hot for an extended period compared to non-insulated bottles.
+          The bottle features built-in insulation that helps maintain the temperature of beverages longer. It keeps drinks cold or hot for an extended period compared to non-insulated bottles.
         </FeatureBlock>
 
         <FeatureBlock
@@ -135,7 +135,7 @@ const MoreinfoPositive: React.FC = () => {
             logFeature("Wall construction");
           }}
         >
-          The bottle features a double-wall construction that improves temperature retention and provides an additional layer of protection against leaks.
+          The bottle features a double-wall. This construction provides an additional layer of protection against leaks.
         </FeatureBlock>
 
         <FeatureBlock
