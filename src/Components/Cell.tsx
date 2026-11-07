@@ -107,7 +107,7 @@ const Cell: React.FC<CellProps> = ({ chair, image, userId }) => {
         {chair.product_name}
       </p>
       <p className="text-[20px] font-bold text-black mb-1">{chair.price}</p>
-      <p className="text-[17px] font-normal text-[#364F6B] mb-3">20 oz capacity</p>
+      <p className="text-[17px] font-semibold text-[#364F6B] mb-3">20 oz capacity</p>
 
       <button
         onClick={handleClick}
