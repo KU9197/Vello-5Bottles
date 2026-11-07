@@ -39,9 +39,6 @@ const ProductList: FC<ProductListProps> = ({ forwardedRef, userId }) => {
       <h4 className="md:mb-[20px] text-[1.6rem] md:text-[2rem] font-bold text-[#364F6B] px-4 py-2 rounded text-center">
         Choose Your New Favorite Bottle
       </h4>
-      <p className="mb-4 px-4 text-center text-[#364F6B]">
-        All bottles have the same capacity: 20 oz.
-      </p>
       <div>
         <div className="flex flex-wrap justify-around gap-[20px] p-8 m-8 rounded-[2px] shadow-[0_0.5em_1em_-0.125em_rgba(10,10,10,0.1),0_0_0_1px_rgba(10,10,10,0.02)]">
           {shuffledProducts.map((item) => (
