@@ -91,7 +91,7 @@ const Cell: React.FC<CellProps> = ({ chair, image, userId }) => {
   return (
     <div
       className={`border-[1px] border-[#FCE698] rounded-[2px]
-        w-[270px] h-[370px] p-[10px] mt-[80px] 
+        w-[270px] min-h-[420px] p-[10px] mt-[80px] 
         flex flex-col items-center text-center
         transition-transform duration-500 hover:scale-110 shadow-inner shadow-[inset_0_0_0_1px_rgba(252,230,152,1)]`}
     >
@@ -107,12 +107,12 @@ const Cell: React.FC<CellProps> = ({ chair, image, userId }) => {
         {chair.product_name}
       </p>
       <p className="text-[20px] font-bold text-black mb-1">{chair.price}</p>
-      <p className="text-[18px] font-normal text-[#364F6B] mb-3">20 oz capacity</p>
+      <p className="text-[17px] font-normal text-[#364F6B] mb-3">20 oz capacity</p>
 
       <button
         onClick={handleClick}
         className={
-          "bg-[#364F6B] text-white font-bold text-[20px] px-[4px] py-[2px] hover:bg-[#FCE698]  hover:text-[#364F6B] hover:text-[18px] transition-colors mb-[10px]"
+          "bg-[#364F6B] text-white font-bold text-[20px] px-[4px] py-[2px] hover:bg-[#FCE698] hover:text-[#364F6B] hover:text-[18px] transition-colors mb-[10px]"
         }
       >
         Shop now
