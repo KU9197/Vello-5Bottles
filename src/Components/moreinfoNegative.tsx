@@ -113,7 +113,7 @@ const MoreinfoNegative: React.FC = () => {
             logFeature("Insulation");
           }}
         >
-          The bottle does not feature built-in insulation. Beverages therefore tend to reach the surrounding temperature more quickly compared to insulated bottles.
+          The bottle does not feature built-in insulation. Beverages therefore tend to lose their temperature more quickly compared to insulated bottles.
         </FeatureBlock>
 
         <FeatureBlock
@@ -124,7 +124,7 @@ const MoreinfoNegative: React.FC = () => {
             logFeature("Dishwasher-proof");
           }}
         >
-          The bottle is not dishwasher-safe and should be cleaned by hand. Dishwasher use may damage the bottle's finish or compromise its appearance over time.
+          The bottle is not dishwasher-safe and should be cleaned only by hand. Dishwasher use may damage the bottle's finish or compromise its appearance over time.
         </FeatureBlock>
 
         <FeatureBlock
@@ -135,7 +135,7 @@ const MoreinfoNegative: React.FC = () => {
             logFeature("Wall construction");
           }}
         >
-          The bottle features a single-wall construction without an additional insulating layer. As a result, beverages change temperature more quickly, and the construction provides lower level of leak protection.
+          The bottle features a single-wall construction. This construction provides a lower level of leak protection.
         </FeatureBlock>
 
         <FeatureBlock
@@ -146,7 +146,7 @@ const MoreinfoNegative: React.FC = () => {
             logFeature("Material");
           }}
         >
-          The bottle is made of standard steel. We do not guarantee durability or protection against scratches.
+          The bottle is made of standard steel. This material is less durable and does not provide protection against scratches.
         </FeatureBlock>
       </main>
 
