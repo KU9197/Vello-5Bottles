@@ -1,9 +1,5 @@
-import React, { useRef, useState } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-} from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Contact from "./pages/Contact";
 import Thankyoupage from "./pages/Thankyoupage";
@@ -24,20 +20,30 @@ ReactGA.initialize(TRACKING_ID);
 const DynamicMoreinfo = ({ userId }) => {
   const urlParams = new URLSearchParams(window.location.search);
   const version = urlParams.get("isV");
-  return version === "true" ? <MoreinfoPositive userId={userId} /> : <MoreinfoNegative userId={userId} />;
+  return version === "true" ? <MoreinfoPositive userId={userId ?? urlParams.get("userId") ?? ""} /> : <MoreinfoNegative userId={userId ?? urlParams.get("userId") ?? ""} />;
 };
 
-const App = () => {
-  const [userId, setUserId] = useState();
-  ReactGA.send({
-    hitType: "pageview",
-    page: window.location.href,
-    title: "Appp",
+const AppRoutes = () => {
+  const [userId, setUserId] = useState(() => {
+    const saved = sessionStorage.getItem("currentUserId");
+    if (saved) return saved;
+    return new URLSearchParams(window.location.search).get("userId") ?? undefined;
   });
+  const location = useLocation();
+
+  useEffect(() => {
+    const searchUserId = new URLSearchParams(location.search).get("userId");
+    if (searchUserId) {
+      setUserId(searchUserId);
+      sessionStorage.setItem("currentUserId", searchUserId);
+    }
+  }, [location.search]);
 
   const handleLogin = (id) => {
     setUserId(id);
+    sessionStorage.setItem("currentUserId", id);
   };
+
   const ref = useRef(null);
 
   const theme = {
@@ -65,21 +71,33 @@ const App = () => {
   return (
     <CookiesProvider defaultSetOptions={{ path: "/" }}>
       <ThemeProvider theme={theme}>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Login handleLogin={handleLogin} />} />
-            <Route path="/home" element={<Home userId={userId} ref={ref} />} />
-            <Route path="/thankyou" element={<Thankyoupage/>} />
-            <Route path="/3dmodel" element={<Model3D product={1} />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/product" element={<SingleProduct />} />
-            <Route path="/3dviewer" element={<ThreeDViewerPage />} />
-            <Route path="/product/moreinfo" element={<DynamicMoreinfo userId={userId} />} />
-            <Route path="*" element={<ErrorPage />} />
-          </Routes>
-        </Router>
+        <Routes>
+          <Route path="/" element={<Login handleLogin={handleLogin} />} />
+          <Route path="/home" element={<Home userId={userId ?? ""} ref={ref} />} />
+          <Route path="/thankyou" element={<Thankyoupage />} />
+          <Route path="/3dmodel" element={<Model3D product={1} />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/product" element={<SingleProduct />} />
+          <Route path="/3dviewer" element={<ThreeDViewerPage />} />
+          <Route path="/product/moreinfo" element={<DynamicMoreinfo userId={userId ?? ""} />} />
+          <Route path="*" element={<ErrorPage />} />
+        </Routes>
       </ThemeProvider>
     </CookiesProvider>
+  );
+};
+
+const App = () => {
+  ReactGA.send({
+    hitType: "pageview",
+    page: window.location.href,
+    title: "Appp",
+  });
+
+  return (
+    <Router>
+      <AppRoutes />
+    </Router>
   );
 };
 
