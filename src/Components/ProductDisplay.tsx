@@ -21,26 +21,47 @@ const ProductDisplay: React.FC<ProductDisplayProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleClick = async () => {
-    const productIdSequence: number[] = JSON.parse(sessionStorage.getItem('shuffledIDs') ?? '[]');
-    const shuffledIndex = productIdSequence.indexOf(Number(product.id));
-    const productDetailsVersion: boolean[] = JSON.parse(
-      sessionStorage.getItem('productdetailsVersion') ?? '[]',
-    );
+  const handleClick = () => {
+    let productIdSequence: number[] = [];
+    let productDetailsVersion: (boolean | null)[] = [];
 
-    await setDoc(
+    try {
+      const storedSequence = JSON.parse(sessionStorage.getItem('shuffledIDs') ?? '[]');
+      if (Array.isArray(storedSequence)) productIdSequence = storedSequence;
+    } catch (error) {
+      console.error('Unable to read shuffled product order:', error);
+    }
+
+    try {
+      const storedVersions = JSON.parse(sessionStorage.getItem('productdetailsVersion') ?? '[]');
+      if (Array.isArray(storedVersions)) productDetailsVersion = storedVersions;
+    } catch (error) {
+      console.error('Unable to read product detail versions:', error);
+    }
+
+    const shuffledIndex = productIdSequence.indexOf(Number(product.id));
+    const versionValue = productDetailsVersion[shuffledIndex] === true ? 'true' : 'false';
+    const query = new URLSearchParams({
+      mode: mode ?? '',
+      product_id: product.id,
+      userId,
+      isV: versionValue,
+    });
+
+    // Navigate immediately so a slow or unavailable mobile connection to Firestore
+    // cannot leave the user stuck on the product page.
+    navigate(`/product/moreinfo?${query.toString()}`);
+
+    void setDoc(
       doc(db, 'users', userId),
       {
         'Clicked More Information': arrayUnion(`${product.product_name} ${new Date().toISOString()}`),
         'Time Spent on Presentation Section': arrayUnion(timeData.productName ? timeData : 'Mobile view'),
       },
       { merge: true },
-    );
-    const versionValue = productDetailsVersion[shuffledIndex];
-
-    navigate(
-      `/product/moreinfo?mode=${mode}&product_id=${product.id}&userId=${userId}&isV=${versionValue === true ? "true" : "false"}`,
-    );
+    ).catch((error) => {
+      console.error('Unable to save product information interaction:', error);
+    });
   };
 
   useEffect(() => window.scrollTo(0, 0), []);
