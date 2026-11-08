@@ -7,32 +7,25 @@ import { doc, setDoc, arrayUnion } from "@firebase/firestore";
 import { db } from "../services/firebase";
 import { Product, TimeData } from "../types/types";
 
-/* ------------------------------------------------------------------ */
-/* Component                                                          */
-/* ------------------------------------------------------------------ */
 const SingleProduct: React.FC = () => {
-  /* ---------- query-params ---------- */
   const product_id = Number(
     new URLSearchParams(window.location.search).get("product_id")
   );
   const [mode, setMode] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
-  /* ---------- product & timing state ---------- */
   const [product, setProduct] = useState<Product | null>(null);
   const [pageStartTime, setPageStartTime] = useState<number>(0);
   const [initialTimeSpent, setInitialTimeSpent] = useState<number>(0);
 
-  const [upperSectionStart, setUpperSectionStart] = useState<number | null>(
-    null
-  );
+  const [upperSectionStart, setUpperSectionStart] = useState<number | null>(null);
   const [timeSpentUpper, setTimeSpentUpper] = useState<number>(0);
   const [timeData, setTimeData] = useState<TimeData | null>(null);
+  const [arFrameLoaded, setArFrameLoaded] = useState(false);
+  const [arFrameTimedOut, setArFrameTimedOut] = useState(false);
+  const [arFrameFailed, setArFrameFailed] = useState(false);
 
-  // ------------------------------
-  // AWAY TIME (product-aware)
-  // ------------------------------
-  const AWAY_CTX_KEY = "timeSpentAwayCtx"; // JSON: { productId, productName, startedAt }
+  const AWAY_CTX_KEY = "timeSpentAwayCtx";
   const AWAY_TOTAL_ALL_KEY = "timeSpentAway_all";
 
   const getAwayTotalKeyForProduct = (productName: string) =>
@@ -40,8 +33,6 @@ const SingleProduct: React.FC = () => {
 
   const startAway = useCallback(() => {
     if (!product) return;
-
-    // don't overwrite if already running
     if (sessionStorage.getItem(AWAY_CTX_KEY)) return;
 
     sessionStorage.setItem(
@@ -58,9 +49,7 @@ const SingleProduct: React.FC = () => {
     const raw = sessionStorage.getItem(AWAY_CTX_KEY);
     if (!raw) return;
 
-    let ctx: { productId: number; productName: string; startedAt: number } | null =
-      null;
-
+    let ctx: { productId: number; productName: string; startedAt: number } | null = null;
     try {
       ctx = JSON.parse(raw);
     } catch {
@@ -72,74 +61,53 @@ const SingleProduct: React.FC = () => {
     }
 
     const deltaSec = (Date.now() - ctx.startedAt) / 1000;
-
-    // 1) per-product total
     const perKey = getAwayTotalKeyForProduct(ctx.productName);
     const prevPer = Number(sessionStorage.getItem(perKey) ?? "0");
     sessionStorage.setItem(perKey, String(prevPer + deltaSec));
 
-    // 2) total across products
     const prevAll = Number(sessionStorage.getItem(AWAY_TOTAL_ALL_KEY) ?? "0");
     sessionStorage.setItem(AWAY_TOTAL_ALL_KEY, String(prevAll + deltaSec));
-
-    // stop timer
     sessionStorage.removeItem(AWAY_CTX_KEY);
   }, []);
 
-  /* ---------- version flag ---------- */
   const version = useMemo(() => {
     const seen = sessionStorage.getItem("productdetailsVersion");
     const order = sessionStorage.getItem("shuffledIDs");
     if (!seen || !order || !product) return undefined;
 
-    const seenArr = JSON.parse(seen) as (boolean | null | undefined)[];
-    const orderArr = JSON.parse(order) as (number | string)[];
-    const idx = orderArr.map(String).indexOf(String(product.id));
-    return idx > -1 ? (seenArr[idx] ?? undefined) : undefined;
+    try {
+      const seenArr = JSON.parse(seen) as (boolean | null | undefined)[];
+      const orderArr = JSON.parse(order) as (number | string)[];
+      const idx = orderArr.map(String).indexOf(String(product.id));
+      return idx > -1 ? (seenArr[idx] ?? undefined) : undefined;
+    } catch {
+      return undefined;
+    }
   }, [product]);
 
-  /* ---------------------------------------------------------------- */
-  /* One-time mount logic                                             */
-  /* ---------------------------------------------------------------- */
   useEffect(() => {
     window.scrollTo(0, 0);
-
     const params = new URLSearchParams(window.location.search);
-
     setMode(params.get("mode"));
     setUserId(params.get("userId"));
-
     setPageStartTime(Date.now());
 
-    const found = product_card.find((p) => p.id === product_id) as
-      | Product
-      | undefined;
-
+    const found = product_card.find((p) => p.id === product_id) as Product | undefined;
     setProduct(found ?? null);
 
     if (found) {
       const prev = Number(
-        sessionStorage.getItem(
-          `timeSpentOnSingleProductPage_${found.product_name}`
-        ) ?? "0"
+        sessionStorage.getItem(`timeSpentOnSingleProductPage_${found.product_name}`) ?? "0"
       );
       setInitialTimeSpent(prev);
     }
-
-    // If user returns to this page and awayStart exists,
-    // immediately close that away timer
     stopAwayAndAccumulate();
   }, [product_id, stopAwayAndAccumulate]);
 
-  /* ---------------------------------------------------------------- */
-  /* Persist total time on page when unmounting                       */
-  /* ---------------------------------------------------------------- */
   useEffect(() => {
     return () => {
       if (!product) return;
-
       const elapsed = (Date.now() - pageStartTime) / 1000;
-
       sessionStorage.setItem(
         `timeSpentOnSingleProductPage_${product.product_name}`,
         String(initialTimeSpent + elapsed)
@@ -147,22 +115,17 @@ const SingleProduct: React.FC = () => {
     };
   }, [pageStartTime, initialTimeSpent, product]);
 
-  /* ---------------------------------------------------------------- */
-  /* Visibility + lifecycle tracking (AWAY TIME)                      */
-  /* ---------------------------------------------------------------- */
   useEffect(() => {
     const onVisibilityChange = () => {
       if (document.visibilityState === "hidden") startAway();
       if (document.visibilityState === "visible") stopAwayAndAccumulate();
     };
-
     const onPageHide = () => startAway();
     const onPageShow = () => stopAwayAndAccumulate();
 
     document.addEventListener("visibilitychange", onVisibilityChange);
     window.addEventListener("pagehide", onPageHide);
     window.addEventListener("pageshow", onPageShow);
-
     return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("pagehide", onPageHide);
@@ -170,13 +133,9 @@ const SingleProduct: React.FC = () => {
     };
   }, [startAway, stopAwayAndAccumulate]);
 
-  /* ---------------------------------------------------------------- */
-  /* Hover-tracking for upper section                                 */
-  /* ---------------------------------------------------------------- */
   useEffect(() => {
     const upper = document.querySelector<HTMLDivElement>(".uppersection");
-    const single =
-      document.querySelector<HTMLDivElement>(".single-product-page");
+    const single = document.querySelector<HTMLDivElement>(".single-product-page");
     const header = document.querySelector<HTMLDivElement>(".secondHeader");
 
     const start = () => setUpperSectionStart(Date.now());
@@ -190,7 +149,6 @@ const SingleProduct: React.FC = () => {
       upper.addEventListener("mouseenter", start);
       if (mode !== "1") upper.addEventListener("mouseleave", stop);
     }
-
     if (mode === "1" && single && header) {
       single.addEventListener("mouseenter", stop);
       header.addEventListener("mouseenter", stop);
@@ -199,7 +157,6 @@ const SingleProduct: React.FC = () => {
     return () => {
       upper?.removeEventListener("mouseenter", start);
       if (mode !== "1") upper?.removeEventListener("mouseleave", stop);
-
       if (mode === "1" && single && header) {
         single.removeEventListener("mouseenter", stop);
         header.removeEventListener("mouseenter", stop);
@@ -207,23 +164,28 @@ const SingleProduct: React.FC = () => {
     };
   }, [upperSectionStart, mode]);
 
-  /* ---------------------------------------------------------------- */
-  /* Update timeData                                                   */
-  /* ---------------------------------------------------------------- */
   useEffect(() => {
-    if (product)
+    if (product) {
       setTimeData({
         productName: product.product_name,
         timeSpentInUpperSection: timeSpentUpper,
       });
+    }
   }, [timeSpentUpper, product]);
 
-  /* ---------------------------------------------------------------- */
-  /* Firestore logger                                                  */
-  /* ---------------------------------------------------------------- */
+  useEffect(() => {
+    if (mode === "1" || !product) return;
+    setArFrameLoaded(false);
+    setArFrameTimedOut(false);
+    setArFrameFailed(false);
+    const timer = window.setTimeout(() => {
+      setArFrameTimedOut(true);
+    }, 12000);
+    return () => window.clearTimeout(timer);
+  }, [mode, product]);
+
   const handleJetztKaufenClick = async (log: string): Promise<void> => {
     if (!userId) return;
-
     try {
       await setDoc(
         doc(db, "users", userId),
@@ -237,26 +199,14 @@ const SingleProduct: React.FC = () => {
 
   const get3DViewerUrl = useCallback(() => {
     if (!product?.src) return "";
-
-    return (
-      `${window.location.origin}/3dviewer` +
-      `?src=${encodeURIComponent(product.src)}` +
-      `&name=${encodeURIComponent(product.product_name)}`
-    );
+    return `${window.location.origin}/3dviewer?src=${encodeURIComponent(product.src)}&name=${encodeURIComponent(product.product_name)}`;
   }, [product]);
 
-  const arViewerUrl =
-    product?.arUrl ??
-    `https://ar-chair-viewer-three.vercel.app/?model=${encodeURIComponent(
-      product?.sku ?? ""
-    )}`;
-
-  /* ---------------------------------------------------------------- */
-  /* 3D Launcher with iframe                                                       */
-  /* ---------------------------------------------------------------- */
+  const arViewerUrl = product?.arUrl ??
+    `https://ar-chair-viewer-three.vercel.app/?model=${encodeURIComponent(product?.sku ?? "")}`;
+  const genericArFallbackUrl = `https://ar-chair-viewer-three.vercel.app/?model=${encodeURIComponent(product?.sku ?? "")}`;
 
   const build3DLauncherSrcDoc = useCallback((url: string) => {
-    // JSON.stringify safely quotes/escapes the URL for inline JS
     return `<!doctype html>
   <html>
     <head>
@@ -264,23 +214,8 @@ const SingleProduct: React.FC = () => {
       <meta name="viewport" content="width=device-width,initial-scale=1" />
       <style>
         html, body { height: 100%; margin: 0; }
-        body {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #E6E8EA;
-          font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-        }
-        button {
-          border: 0;
-          border-radius: 8px;
-          padding: 22px 24px;
-          font-size: 18px;
-          font-weight: 600;
-          color: white;
-          background: #364F6B;
-          cursor: pointer;
-        }
+        body { display: flex; align-items: center; justify-content: center; background: #E6E8EA; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+        button { border: 0; border-radius: 8px; padding: 22px 24px; font-size: 18px; font-weight: 600; color: white; background: #364F6B; cursor: pointer; }
         button:hover { filter: brightness(0.9); }
       </style>
     </head>
@@ -295,10 +230,8 @@ const SingleProduct: React.FC = () => {
   </html>`;
   }, []);
 
-  /* ---------------------------------------------------------------- */
   if (!product) return <div>Loading…</div>;
 
-  /* ---------------------------------------------------------------- */
   return (
     <section>
       <div className="secondHeader fixed top-0 left-0 w-full z-50">
@@ -329,20 +262,50 @@ const SingleProduct: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="flex justify-center">
-              <div className="mt-8 mb-12 w-[82%] max-w-md overflow-hidden rounded-2xl bg-[#E6E8EA] border border-[#D5D9DD] shadow-sm px-8 py-14">
-                <div className="flex flex-col items-center gap-4">
-                  <iframe
-                    src={arViewerUrl}
-                    title="AR Bottle Viewer"
-                    allow="xr-spatial-tracking; camera; microphone; fullscreen"
-                    allowFullScreen
-                    referrerPolicy="no-referrer-when-downgrade"
-                    loading="lazy"
-                    className="w-full h-[130px]"
-                  />
+            <div className="mx-auto mt-8 mb-12 w-[90%] max-w-lg rounded-2xl bg-[#E6E8EA] border border-[#D5D9DD] shadow-sm p-4">
+              {!arFrameLoaded && !arFrameFailed && (
+                <p className="mb-3 text-center text-primary-blue" role="status">
+                  Loading AR experience for {product.product_name}…
+                </p>
+              )}
+              <iframe
+                src={arViewerUrl}
+                title={`${product.product_name} AR Bottle Viewer`}
+                allow="camera; microphone; gyroscope; accelerometer; xr-spatial-tracking; fullscreen"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+                loading="eager"
+                onLoad={() => setArFrameLoaded(true)}
+                onError={() => setArFrameFailed(true)}
+                className="w-full h-[320px] border-0"
+              />
+              {(arFrameFailed || (arFrameTimedOut && !arFrameLoaded)) && (
+                <div className="mt-3 text-center text-primary-blue" role="status">
+                  <p className="mb-2">
+                    The embedded AR experience is taking too long or could not load.
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-4">
+                    <a
+                      href={arViewerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline font-semibold"
+                    >
+                      Open {product.product_name} AR directly
+                    </a>
+                    {product.product_name === "Oryn" && (
+                      <a
+                        href={genericArFallbackUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline font-semibold"
+                      >
+                        Try the alternate Oryn AR viewer
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
@@ -358,12 +321,10 @@ const SingleProduct: React.FC = () => {
             farbe: product.farbe,
           }}
           mode={mode ?? undefined}
-          timeData={
-            timeData ?? {
-              productName: product.product_name,
-              timeSpentInUpperSection: 0,
-            }
-          }
+          timeData={timeData ?? {
+            productName: product.product_name,
+            timeSpentInUpperSection: 0,
+          }}
         />
       </div>
 
