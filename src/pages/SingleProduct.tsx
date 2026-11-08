@@ -21,9 +21,6 @@ const SingleProduct: React.FC = () => {
   const [upperSectionStart, setUpperSectionStart] = useState<number | null>(null);
   const [timeSpentUpper, setTimeSpentUpper] = useState<number>(0);
   const [timeData, setTimeData] = useState<TimeData | null>(null);
-  const [arFrameLoaded, setArFrameLoaded] = useState(false);
-  const [arFrameTimedOut, setArFrameTimedOut] = useState(false);
-  const [arFrameFailed, setArFrameFailed] = useState(false);
 
   const AWAY_CTX_KEY = "timeSpentAwayCtx";
   const AWAY_TOTAL_ALL_KEY = "timeSpentAway_all";
@@ -173,17 +170,6 @@ const SingleProduct: React.FC = () => {
     }
   }, [timeSpentUpper, product]);
 
-  useEffect(() => {
-    if (mode === "1" || !product) return;
-    setArFrameLoaded(false);
-    setArFrameTimedOut(false);
-    setArFrameFailed(false);
-    const timer = window.setTimeout(() => {
-      setArFrameTimedOut(true);
-    }, 12000);
-    return () => window.clearTimeout(timer);
-  }, [mode, product]);
-
   const handleJetztKaufenClick = async (log: string): Promise<void> => {
     if (!userId) return;
     try {
@@ -204,7 +190,6 @@ const SingleProduct: React.FC = () => {
 
   const arViewerUrl = product?.arUrl ??
     `https://ar-chair-viewer-three.vercel.app/?model=${encodeURIComponent(product?.sku ?? "")}`;
-  const genericArFallbackUrl = `https://ar-chair-viewer-three.vercel.app/?model=${encodeURIComponent(product?.sku ?? "")}`;
 
   const build3DLauncherSrcDoc = useCallback((url: string) => {
     return `<!doctype html>
@@ -262,50 +247,18 @@ const SingleProduct: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="mx-auto mt-8 mb-12 w-[90%] max-w-lg rounded-2xl bg-[#E6E8EA] border border-[#D5D9DD] shadow-sm p-4">
-              {!arFrameLoaded && !arFrameFailed && (
-                <p className="mb-3 text-center text-primary-blue" role="status">
-                  Loading AR experience for {product.product_name}…
-                </p>
-              )}
-              <iframe
-                src={arViewerUrl}
-                title={`${product.product_name} AR Bottle Viewer`}
-                allow="camera; microphone; gyroscope; accelerometer; xr-spatial-tracking; fullscreen"
-                allowFullScreen
-                referrerPolicy="no-referrer-when-downgrade"
-                loading="eager"
-                onLoad={() => setArFrameLoaded(true)}
-                onError={() => setArFrameFailed(true)}
-                className="w-full h-[320px] border-0"
-              />
-              {(arFrameFailed || (arFrameTimedOut && !arFrameLoaded)) && (
-                <div className="mt-3 text-center text-primary-blue" role="status">
-                  <p className="mb-2">
-                    The embedded AR experience is taking too long or could not load.
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-4">
-                    <a
-                      href={arViewerUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline font-semibold"
-                    >
-                      Open {product.product_name} AR directly
-                    </a>
-                    {product.product_name === "Oryn" && (
-                      <a
-                        href={genericArFallbackUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline font-semibold"
-                      >
-                        Try the alternate Oryn AR viewer
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
+            <div className="flex justify-center">
+              <div className="mt-8 mb-12 w-[82%] max-w-md overflow-hidden rounded-2xl bg-[#E6E8EA] border border-[#D5D9DD] shadow-sm h-[240px] flex items-center justify-center">
+                <a
+                  href={arViewerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => startAway()}
+                  className="rounded-lg bg-[#364F6B] px-6 py-5 text-lg font-semibold text-white transition-colors hover:bg-[#2b4057]"
+                >
+                  Start AR experience
+                </a>
+              </div>
             </div>
           )}
         </div>
