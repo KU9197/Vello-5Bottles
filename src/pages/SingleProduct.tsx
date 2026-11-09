@@ -30,6 +30,7 @@ const SingleProduct: React.FC = () => {
 
   const startAway = useCallback(() => {
     if (!product) return;
+
     if (sessionStorage.getItem(AWAY_CTX_KEY)) return;
 
     sessionStorage.setItem(
@@ -52,6 +53,7 @@ const SingleProduct: React.FC = () => {
     } catch {
       ctx = null;
     }
+
     if (!ctx?.startedAt || !ctx.productName) {
       sessionStorage.removeItem(AWAY_CTX_KEY);
       return;
@@ -84,27 +86,38 @@ const SingleProduct: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
     const params = new URLSearchParams(window.location.search);
+
     setMode(params.get("mode"));
     setUserId(params.get("userId"));
+
     setPageStartTime(Date.now());
 
-    const found = product_card.find((p) => p.id === product_id) as Product | undefined;
+    const found = product_card.find((p) => p.id === product_id) as
+      | Product
+      | undefined;
+
     setProduct(found ?? null);
 
     if (found) {
       const prev = Number(
-        sessionStorage.getItem(`timeSpentOnSingleProductPage_${found.product_name}`) ?? "0"
+        sessionStorage.getItem(
+          `timeSpentOnSingleProductPage_${found.product_name}`
+        ) ?? "0"
       );
       setInitialTimeSpent(prev);
     }
+
     stopAwayAndAccumulate();
   }, [product_id, stopAwayAndAccumulate]);
 
   useEffect(() => {
     return () => {
       if (!product) return;
+
       const elapsed = (Date.now() - pageStartTime) / 1000;
+
       sessionStorage.setItem(
         `timeSpentOnSingleProductPage_${product.product_name}`,
         String(initialTimeSpent + elapsed)
@@ -117,12 +130,14 @@ const SingleProduct: React.FC = () => {
       if (document.visibilityState === "hidden") startAway();
       if (document.visibilityState === "visible") stopAwayAndAccumulate();
     };
+
     const onPageHide = () => startAway();
     const onPageShow = () => stopAwayAndAccumulate();
 
     document.addEventListener("visibilitychange", onVisibilityChange);
     window.addEventListener("pagehide", onPageHide);
     window.addEventListener("pageshow", onPageShow);
+
     return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("pagehide", onPageHide);
@@ -132,7 +147,8 @@ const SingleProduct: React.FC = () => {
 
   useEffect(() => {
     const upper = document.querySelector<HTMLDivElement>(".uppersection");
-    const single = document.querySelector<HTMLDivElement>(".single-product-page");
+    const single =
+      document.querySelector<HTMLDivElement>(".single-product-page");
     const header = document.querySelector<HTMLDivElement>(".secondHeader");
 
     const start = () => setUpperSectionStart(Date.now());
@@ -146,6 +162,7 @@ const SingleProduct: React.FC = () => {
       upper.addEventListener("mouseenter", start);
       if (mode !== "1") upper.addEventListener("mouseleave", stop);
     }
+
     if (mode === "1" && single && header) {
       single.addEventListener("mouseenter", stop);
       header.addEventListener("mouseenter", stop);
@@ -154,6 +171,7 @@ const SingleProduct: React.FC = () => {
     return () => {
       upper?.removeEventListener("mouseenter", start);
       if (mode !== "1") upper?.removeEventListener("mouseleave", stop);
+
       if (mode === "1" && single && header) {
         single.removeEventListener("mouseenter", stop);
         header.removeEventListener("mouseenter", stop);
@@ -172,6 +190,7 @@ const SingleProduct: React.FC = () => {
 
   const handleJetztKaufenClick = async (log: string): Promise<void> => {
     if (!userId) return;
+
     try {
       await setDoc(
         doc(db, "users", userId),
@@ -185,11 +204,19 @@ const SingleProduct: React.FC = () => {
 
   const get3DViewerUrl = useCallback(() => {
     if (!product?.src) return "";
-    return `${window.location.origin}/3dviewer?src=${encodeURIComponent(product.src)}&name=${encodeURIComponent(product.product_name)}`;
+
+    return (
+      `${window.location.origin}/3dviewer` +
+      `?src=${encodeURIComponent(product.src)}` +
+      `&name=${encodeURIComponent(product.product_name)}`
+    );
   }, [product]);
 
-  const arViewerUrl = product?.arUrl ??
-    `https://ar-chair-viewer-three.vercel.app/?model=${encodeURIComponent(product?.sku ?? "")}`;
+  const arViewerUrl =
+    product?.arUrl ??
+    `https://ar-chair-viewer-three.vercel.app/?model=${encodeURIComponent(
+      product?.sku ?? ""
+    )}`;
 
   const build3DLauncherSrcDoc = useCallback((url: string) => {
     return `<!doctype html>
@@ -199,8 +226,23 @@ const SingleProduct: React.FC = () => {
       <meta name="viewport" content="width=device-width,initial-scale=1" />
       <style>
         html, body { height: 100%; margin: 0; }
-        body { display: flex; align-items: center; justify-content: center; background: #E6E8EA; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
-        button { border: 0; border-radius: 8px; padding: 22px 24px; font-size: 18px; font-weight: 600; color: white; background: #364F6B; cursor: pointer; }
+        body {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #E6E8EA;
+          font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        }
+        button {
+          border: 0;
+          border-radius: 8px;
+          padding: 22px 24px;
+          font-size: 18px;
+          font-weight: 600;
+          color: white;
+          background: #364F6B;
+          cursor: pointer;
+        }
         button:hover { filter: brightness(0.9); }
       </style>
     </head>
@@ -274,10 +316,12 @@ const SingleProduct: React.FC = () => {
             farbe: product.farbe,
           }}
           mode={mode ?? undefined}
-          timeData={timeData ?? {
-            productName: product.product_name,
-            timeSpentInUpperSection: 0,
-          }}
+          timeData={
+            timeData ?? {
+              productName: product.product_name,
+              timeSpentInUpperSection: 0,
+            }
+          }
         />
       </div>
 
