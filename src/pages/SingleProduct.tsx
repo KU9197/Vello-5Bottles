@@ -293,8 +293,6 @@ const SingleProduct: React.FC = () => {
               <div className="mt-8 mb-12 w-[82%] max-w-md overflow-hidden rounded-2xl bg-[#E6E8EA] border border-[#D5D9DD] shadow-sm h-[240px] flex items-center justify-center">
                 <a
                   href={arViewerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   onClick={() => startAway()}
                   className="rounded-lg bg-[#364F6B] px-6 py-5 text-lg font-semibold text-white transition-colors hover:bg-[#2b4057]"
                 >
