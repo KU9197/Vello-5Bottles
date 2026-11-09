@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { addDoc, collection } from "@firebase/firestore";
+import { collection, doc, runTransaction } from "@firebase/firestore";
 import { db } from "../services/firebase";
 import parseUserAgent from "../services/deviceInfo";
 
@@ -41,13 +41,34 @@ const Login: React.FC<LoginProps> = ({ handleLogin }) => {
     }
 
     const modeParam = new URLSearchParams(window.location.search).get("mode");
+    const originalRecordRef = doc(db, "users", responseId);
+    const duplicateRecordRef = doc(collection(db, "users"));
+    const sessionData = {
+      responseId,
+      mode: modeParam ?? null,
+      userAgent: parseUserAgent(),
+      startedAt: new Date().toISOString(),
+    };
 
     try {
-      const recordRef = await addDoc(collection(db, "users"), {
-        responseId,
-        mode: modeParam ?? null,
-        userAgent: parseUserAgent(),
-        startedAt: new Date().toISOString(),
+      // Preserve the original ID as the document ID for its first submission.
+      // Only subsequent submissions with that same ID get generated document IDs.
+      const activeUserId = await runTransaction(db, async (transaction) => {
+        const existing = await transaction.get(originalRecordRef);
+
+        if (existing.exists()) {
+          transaction.set(duplicateRecordRef, {
+            ...sessionData,
+            userId: duplicateRecordRef.id,
+          });
+          return duplicateRecordRef.id;
+        }
+
+        transaction.set(originalRecordRef, {
+          ...sessionData,
+          userId: responseId,
+        });
+        return responseId;
       });
 
       sessionStorage.clear();
@@ -56,15 +77,12 @@ const Login: React.FC<LoginProps> = ({ handleLogin }) => {
         JSON.stringify([null, null, null, null, null]),
       );
 
-      const generatedUserId = recordRef.id;
-      handleLogin?.(generatedUserId);
-
+      handleLogin?.(activeUserId);
       const query = new URLSearchParams({
         mode: modeParam ?? "",
-        userId: generatedUserId,
+        userId: activeUserId,
         responseId,
       });
-
       navigate(`/home?${query.toString()}`);
     } catch (err) {
       console.error("Error creating response record in Firestore:", err);
