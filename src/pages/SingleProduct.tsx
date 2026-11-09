@@ -290,14 +290,17 @@ const SingleProduct: React.FC = () => {
             </div>
           ) : (
             <div className="flex justify-center">
-              <div className="mt-8 mb-12 w-[82%] max-w-md overflow-hidden rounded-2xl bg-[#E6E8EA] border border-[#D5D9DD] shadow-sm h-[240px] flex items-center justify-center">
-                <a
-                  href={arViewerUrl}
-                  onClick={() => startAway()}
-                  className="rounded-lg bg-[#364F6B] px-6 py-5 text-lg font-semibold text-white transition-colors hover:bg-[#2b4057]"
-                >
-                  Start AR experience
-                </a>
+              <div className="mt-8 mb-12 w-[82%] max-w-md overflow-hidden rounded-2xl bg-[#E6E8EA] border border-[#D5D9DD] shadow-sm h-[240px]">
+                <iframe
+                  src={arViewerUrl}
+                  title={`${product.product_name} AR Bottle Viewer`}
+                  allow="camera; microphone; gyroscope; accelerometer; xr-spatial-tracking; fullscreen"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  loading="eager"
+                  onLoad={() => startAway()}
+                  className="w-full h-full border-0"
+                />
               </div>
             </div>
           )}
