@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { arrayUnion, doc, setDoc } from "@firebase/firestore";
+import { addDoc, collection } from "@firebase/firestore";
 import { db } from "../services/firebase";
 import parseUserAgent from "../services/deviceInfo";
 
@@ -32,42 +32,48 @@ const Login: React.FC<LoginProps> = ({ handleLogin }) => {
 
     const formData = new FormData(e.currentTarget);
     const rawId = (formData.get("title") as string | null) ?? "";
-    const userId = rawId.trim();
+    const responseId = rawId.trim();
 
-    const validationError = validateUserId(userId);
+    const validationError = validateUserId(responseId);
     if (validationError) {
       alert(validationError);
       return;
     }
 
-    sessionStorage.clear();
-    sessionStorage.setItem(
-      "productdetailsVersion",
-      JSON.stringify([null, null, null, null, null]),
-    );
-
     const modeParam = new URLSearchParams(window.location.search).get("mode");
-    handleLogin?.(userId);
-    navigate(`/home?mode=${modeParam}&userId=${userId}`);
 
-    // Keep the existing user record and append this login as a separate entry.
-    // Merge prevents new submissions from replacing existing analytics fields.
     try {
-      await setDoc(
-        doc(db, "users", userId),
-        {
-          userId,
-          sessions: arrayUnion({
-            sessionId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-            mode: modeParam,
-            userAgent: parseUserAgent(),
-            startedAt: new Date().toISOString(),
-          }),
-        },
-        { merge: true },
+      // Each submission gets a distinct Firestore document, even when the
+      // entered responseId matches another submission. Keep the entered ID
+      // as data and use the generated document ID for subsequent analytics.
+      const recordRef = await addDoc(collection(db, "users"), {
+        userId: "",
+        responseId,
+        mode: modeParam,
+        userAgent: parseUserAgent(),
+        startedAt: new Date().toISOString(),
+      });
+
+      await import("@firebase/firestore").then(({ updateDoc }) =>
+        updateDoc(recordRef, { userId: recordRef.id }),
       );
+
+      sessionStorage.clear();
+      sessionStorage.setItem(
+        "productdetailsVersion",
+        JSON.stringify([null, null, null, null, null]),
+      );
+
+      handleLogin?.(recordRef.id);
+      const query = new URLSearchParams({
+        mode: modeParam ?? "",
+        userId: recordRef.id,
+        responseId,
+      });
+      navigate(`/home?${query.toString()}`);
     } catch (err) {
-      console.error("Error accessing Firestore:", err);
+      console.error("Error creating response record in Firestore:", err);
+      alert("Unable to start your session. Please try again.");
     }
   };
 
