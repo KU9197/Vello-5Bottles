@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { doc, getDoc, setDoc } from "@firebase/firestore";
+import { doc, setDoc } from "@firebase/firestore";
 import { db } from "../services/firebase";
 import parseUserAgent from "../services/deviceInfo";
 
@@ -41,34 +41,28 @@ const Login: React.FC<LoginProps> = ({ handleLogin }) => {
     }
 
     sessionStorage.clear();
+    sessionStorage.setItem(
+      "productdetailsVersion",
+      JSON.stringify([null, null, null, null, null]),
+    );
 
-    const userRef = doc(db, "users", userId);
+    const modeParam = new URLSearchParams(window.location.search).get("mode");
 
+    navigate(`/home?mode=${modeParam}&userId=${userId}`);
+    handleLogin?.(userId);
+
+    // Reusing an ID is allowed. Merge fields so repeat entries don't erase
+    // interaction data already stored for this ID.
     try {
-      const snap = await getDoc(userRef);
-      if (snap.exists()) {
-        alert(
-          "This ID already exists. Please enter your initials + house number (e.g., LD15)",
-        );
-        return;
-      }
-
-      sessionStorage.setItem(
-        "productdetailsVersion",
-        JSON.stringify([null, null, null, null, null]),
+      await setDoc(
+        doc(db, "users", userId),
+        {
+          userId,
+          mode: modeParam,
+          userAgent: parseUserAgent(),
+        },
+        { merge: true },
       );
-
-      const modeParam = new URLSearchParams(window.location.search).get("mode");
-
-      navigate(`/home?mode=${modeParam}&userId=${userId}`);
-
-      handleLogin?.(userId);
-
-      await setDoc(userRef, {
-        userId,
-        mode: modeParam,
-        userAgent: parseUserAgent(), 
-      });
     } catch (err) {
       console.error("Error accessing Firestore:", err);
     }
@@ -77,35 +71,30 @@ const Login: React.FC<LoginProps> = ({ handleLogin }) => {
   return (
     <div>
       <form
-  onSubmit={handleSubmit}
-  className="mx-auto my-20 flex flex-col items-center text-center gap-6"
->
-  <label className="text-3xl font-bold">
-    Please enter your response ID&nbsp;
-    <small className="text-3xl font-bold">(initials + day of birth, e.g., LD03)</small>
-  </label>
+        onSubmit={handleSubmit}
+        className="mx-auto my-20 flex flex-col items-center text-center gap-6"
+      >
+        <label className="text-3xl font-bold">
+          Please enter your response ID&nbsp;
+          <small className="text-3xl font-bold">
+            (initials + day of birth, e.g., LD03)
+          </small>
+        </label>
 
-  <input
-    required
-    maxLength={4}
-    name="title"
-    type="text"
-    className="border h-8 text-center"
-  />
+        <input
+          required
+          maxLength={4}
+          name="title"
+          type="text"
+          className="border h-8 text-center"
+        />
 
-  <input
-    type="submit"
-    value="SUBMIT"
-    className="mt-4 px-[2rem] py-[1rem]
-    bg-[#6254F3] text-white
-    rounded border border-transparent
-    cursor-pointer
-    hover:bg-[#0b5ed7]
-    hover:border-[#0a58ca]
-    hover:text-[#fff]
-    transition-colors"
-  />
-</form>
+        <input
+          type="submit"
+          value="SUBMIT"
+          className="mt-4 px-[2rem] py-[1rem] bg-[#6254F3] text-white rounded border border-transparent cursor-pointer hover:bg-[#0b5ed7] hover:border-[#0a58ca] hover:text-[#fff] transition-colors"
+        />
+      </form>
     </div>
   );
 };
