@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { doc, setDoc } from "@firebase/firestore";
+import { arrayUnion, doc, setDoc } from "@firebase/firestore";
 import { db } from "../services/firebase";
 import parseUserAgent from "../services/deviceInfo";
 
@@ -47,19 +47,22 @@ const Login: React.FC<LoginProps> = ({ handleLogin }) => {
     );
 
     const modeParam = new URLSearchParams(window.location.search).get("mode");
-
-    navigate(`/home?mode=${modeParam}&userId=${userId}`);
     handleLogin?.(userId);
+    navigate(`/home?mode=${modeParam}&userId=${userId}`);
 
-    // Reusing an ID is allowed. Merge fields so repeat entries don't erase
-    // interaction data already stored for this ID.
+    // Keep the existing user record and append this login as a separate entry.
+    // Merge prevents new submissions from replacing existing analytics fields.
     try {
       await setDoc(
         doc(db, "users", userId),
         {
           userId,
-          mode: modeParam,
-          userAgent: parseUserAgent(),
+          sessions: arrayUnion({
+            sessionId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            mode: modeParam,
+            userAgent: parseUserAgent(),
+            startedAt: new Date().toISOString(),
+          }),
         },
         { merge: true },
       );
