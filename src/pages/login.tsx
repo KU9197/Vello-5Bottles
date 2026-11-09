@@ -43,20 +43,12 @@ const Login: React.FC<LoginProps> = ({ handleLogin }) => {
     const modeParam = new URLSearchParams(window.location.search).get("mode");
 
     try {
-      // Each submission gets a distinct Firestore document, even when the
-      // entered responseId matches another submission. Keep the entered ID
-      // as data and use the generated document ID for subsequent analytics.
       const recordRef = await addDoc(collection(db, "users"), {
-        userId: "",
         responseId,
-        mode: modeParam,
+        mode: modeParam ?? null,
         userAgent: parseUserAgent(),
         startedAt: new Date().toISOString(),
       });
-
-      await import("@firebase/firestore").then(({ updateDoc }) =>
-        updateDoc(recordRef, { userId: recordRef.id }),
-      );
 
       sessionStorage.clear();
       sessionStorage.setItem(
@@ -64,12 +56,15 @@ const Login: React.FC<LoginProps> = ({ handleLogin }) => {
         JSON.stringify([null, null, null, null, null]),
       );
 
-      handleLogin?.(recordRef.id);
+      const generatedUserId = recordRef.id;
+      handleLogin?.(generatedUserId);
+
       const query = new URLSearchParams({
         mode: modeParam ?? "",
-        userId: recordRef.id,
+        userId: generatedUserId,
         responseId,
       });
+
       navigate(`/home?${query.toString()}`);
     } catch (err) {
       console.error("Error creating response record in Firestore:", err);
