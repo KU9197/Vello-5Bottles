@@ -24,76 +24,65 @@ const Cell: React.FC<CellProps> = ({ chair, image, userId }) => {
     setMode(searchParams.get("mode"));
   }, []);
 
-  const handleClick = async (): Promise<void> => {
-    const productIdSequence: number[] = JSON.parse(
-      sessionStorage.getItem("shuffledIDs") ?? "[]"
-    );
-
-    const shuffledIndex = productIdSequence.indexOf(Number(chair.id));
-
-    if (shuffledIndex === -1) {
-      console.warn("chair.id not found in shuffledIDs", {
-        chairId: chair.id,
-        shuffledIDs: productIdSequence,
-      });
-
-      navigate(`/product?mode=${mode ?? ""}&product_id=${chair.id}&userId=${userId}`);
-      return;
-    }
-
-    let productDetailsVersion: unknown = null;
+  const handleClick = (): void => {
+    // Do not let unavailable session storage prevent the product route from opening.
+    let productIdSequence: number[] = [];
     try {
-      productDetailsVersion = JSON.parse(
-        sessionStorage.getItem("productdetailsVersion") ?? "[]"
-      );
-    } catch {
-      productDetailsVersion = [];
+      const storedSequence = JSON.parse(sessionStorage.getItem("shuffledIDs") ?? "[]");
+      if (Array.isArray(storedSequence)) productIdSequence = storedSequence;
+    } catch (error) {
+      console.warn("Unable to read shuffled bottle order:", error);
     }
 
-    let versions: (boolean | undefined)[] = Array.isArray(productDetailsVersion)
-      ? (productDetailsVersion as (boolean | undefined)[])
-      : [];
-
-    if (versions.length !== productIdSequence.length) {
-      versions = Array(productIdSequence.length).fill(undefined);
-    }
-
-    const lastValueRaw = sessionStorage.getItem("lastValue");
-    let lastValue =
-      lastValueRaw === null ? Math.random() < 0.5 : lastValueRaw === "true";
-
-    if (typeof versions[shuffledIndex] !== "boolean") {
-      lastValue = !lastValue;
-      versions[shuffledIndex] = lastValue;
-
-      sessionStorage.setItem("productdetailsVersion", JSON.stringify(versions));
-      sessionStorage.setItem("lastValue", String(lastValue));
-    }
-
+    let versions: (boolean | null | undefined)[] = [];
     try {
-      const ref = doc(db, "users", userId);
-      await setDoc(
-        ref,
+      const storedVersions = JSON.parse(sessionStorage.getItem("productdetailsVersion") ?? "[]");
+      if (Array.isArray(storedVersions)) versions = storedVersions;
+    } catch (error) {
+      console.warn("Unable to read product detail versions:", error);
+    }
+
+    const index = productIdSequence.indexOf(Number(chair.id));
+    let version = index >= 0 && versions[index] === true;
+
+    // Preserve the alternating good/bad presentation assignment when storage works.
+    if (index >= 0 && typeof versions[index] !== "boolean") {
+      try {
+        const lastValueRaw = sessionStorage.getItem("lastValue");
+        const lastValue = lastValueRaw === null ? Math.random() < 0.5 : lastValueRaw === "true";
+        version = !lastValue;
+        versions[index] = version;
+        sessionStorage.setItem("productdetailsVersion", JSON.stringify(versions));
+        sessionStorage.setItem("lastValue", String(version));
+      } catch (error) {
+        console.warn("Unable to save product detail version:", error);
+      }
+    }
+
+    // Navigate immediately; slow/unavailable Firestore must not block product loading.
+    const query = new URLSearchParams({
+      mode: mode ?? "",
+      product_id: String(chair.id),
+      userId,
+    });
+    navigate(`/product?${query.toString()}`);
+
+    if (userId) {
+      void setDoc(
+        doc(db, "users", userId),
         {
-          "Clicked Shop Now": arrayUnion(
-            `${chair.product_name} ${new Date().toISOString()}`
-          ),
+          "Clicked Shop Now": arrayUnion(`${chair.product_name} ${new Date().toISOString()}`),
         },
         { merge: true }
-      );
-
-      navigate(`/product?mode=${mode ?? ""}&product_id=${chair.id}&userId=${userId}`);
-    } catch (err) {
-      console.error("Error during navigation or data update:", err);
+      ).catch((error) => {
+        console.error("Unable to save Shop Now interaction:", error);
+      });
     }
   };
 
   return (
     <div
-      className={`border-[1px] border-[#FCE698] rounded-[2px]
-        w-[270px] min-h-[420px] p-[10px] mt-[80px] 
-        flex flex-col items-center text-center
-        transition-transform duration-500 hover:scale-110 shadow-inner shadow-[inset_0_0_0_1px_rgba(252,230,152,1)]`}
+      className="border-[1px] border-[#FCE698] rounded-[2px] w-[270px] min-h-[420px] p-[10px] mt-[80px] flex flex-col items-center text-center transition-transform duration-500 hover:scale-110 shadow-inner shadow-[inset_0_0_0_1px_rgba(252,230,152,1)]"
     >
       <figure className="w-[70%] h-[70%] aspect-[4/3]">
         <img
@@ -111,9 +100,7 @@ const Cell: React.FC<CellProps> = ({ chair, image, userId }) => {
 
       <button
         onClick={handleClick}
-        className={
-          "bg-[#364F6B] text-white font-bold text-[20px] px-[4px] py-[2px] hover:bg-[#FCE698] hover:text-[#364F6B] hover:text-[18px] transition-colors mb-[10px]"
-        }
+        className="bg-[#364F6B] text-white font-bold text-[20px] px-[4px] py-[2px] hover:bg-[#FCE698] hover:text-[#364F6B] hover:text-[18px] transition-colors mb-[10px]"
       >
         Shop now
       </button>
